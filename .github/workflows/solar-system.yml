@@ -46,6 +46,8 @@ jobs:
           with:
             node-version: 20
 
+        - run: ls -1a
+
         - name: Install Dependencies
           run: npm install
 
