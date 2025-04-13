@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - 'feature/*'
+
 env:
   MONGO_URI: 'mongodb+srv://supercluster.d83jj.mongodb.net/superData'
   MONGO_USERNAME: superuser
@@ -23,6 +24,12 @@ jobs:
           uses: actions/setup-node@v4
           with:
             node-version: 20
+
+        - name: Cache NPM dependencies
+          uses: actions/cache@v4
+          with:
+            path: ~/.npm
+            key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
 
         - name: Install Dependencies
           run: npm install
@@ -51,6 +58,12 @@ jobs:
             node-version: 20
 
         - run: ls -1a
+
+        - name: Cache NPM dependencies
+          uses: actions/cache@v4
+          with:
+            path: ~/.npm
+            key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
 
         - name: Install Dependencies
           run: npm install
