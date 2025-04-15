@@ -150,3 +150,72 @@ jobs:
             context: .
             push: true
             tags: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+
+    dev-deploy:
+      needs: docker
+      runs-on: ubuntu-latest
+      environment: development
+      steps:
+
+        - name: Checkout Repo
+          uses: actions/checkout@v4
+
+        - name: Install kubectl CLI
+          uses: azure/setup-kubectl@v3
+          with:
+            version: 'latest'
+
+        - name: Set up Kubeconfig
+          uses: azure/k8s-set-context@v3
+          with:
+            method: kubeconfig
+            # TODO: Get value for KUBECONFIG used in the videos.
+            kubeconfig: ${{ secrets.KUBECONFIG }}
+
+        - name: Fetch Kubernetes Cluster Details
+          run: |
+            kubectl version --short
+            echo ------------------------------------
+            kubectl get nodes
+
+        - name: Get Nginx Ingress Controller IP as GITHUB Environment Variable
+          id: get-nginx-ip
+          run: |
+            export INGRESS_IP=$(kubectl get services \
+              -n ingress-nginx ingress-nginx-controller \
+              -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            echo "INGRESS_IP=${INGRESS_IP}" >> "$GITHUB_ENV"
+
+        - name: Replace Token in Manifest files
+          uses: cschleiden/replace-tokens@v1
+          with:
+            files: "kubernetes/development/*.yaml"
+            tokenPrefix: '_{_'
+            tokenSuffix: '_}_'
+          env:
+            NAMESPACE: ${{ vars.NAMESPACE }}
+            REPLICAS: ${{ vars.REPLICAS }}
+            IMAGE: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+            INGRESS_IP: ${{ secrets.INGRESS_IP }}
+
+        - name: Check files
+          run: |
+            for file in kubernetes/development/*.yaml; do
+              echo "Contents of $file:"
+              cat "$file"
+              echo "------------------------------------"
+            done
+
+        - name: Create MongoDB secret
+          run: |
+            kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
+              --from-literal=MONGO_URI=${{ env.MONGO_URI}} \
+              --from-literal=MONGO_USERNAME=${{ env.MONGO_USERNAME }} \
+              --from-literal=MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
+              --save-config \
+              --dry-run=client \
+              -o yaml | kubectl apply -f -
+
+        - name: Deploy to dev env
+          run: |
+            kubectl apply -f kubernetes/development
