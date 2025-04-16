@@ -173,6 +173,9 @@ jobs:
             # TODO: Get value for KUBECONFIG used in the videos.
             kubeconfig: '${{ secrets.KUBECONFIG }}'
 
+        - name: Kubectl version troubleshooting
+          run: kubectl version --help
+
         - name: Fetch Kubernetes Cluster Details
           run: |
             kubectl version --short -o yaml
