@@ -175,9 +175,7 @@ jobs:
 
         - name: Fetch Kubernetes Cluster Details
           run: |
-            kubectl version -o yaml
-            echo ------------------------------------
-            kubectl get nodes
+            kubectl version --short -o yaml
 
         - name: Get Nginx Ingress Controller IP as GITHUB Environment Variable
           id: get-nginx-ip
