@@ -183,7 +183,6 @@ jobs:
           run: >
             echo "INGRESS_IP=$(kubectl -n ingress-nginx get services ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')" >> $GITHUB_ENV
 
-
         - name: Replace Token in Manifest files
           uses: cschleiden/replace-tokens@v1
           with:
@@ -218,3 +217,9 @@ jobs:
         - name: Deploy to dev env
           run: |
             kubectl apply -f kubernetes/development
+
+    integration-testing:
+      uses: ./.github/workflows/reusable-workflow.yml
+      needs: dev-deploy
+      with:
+        ingress-url: ${{ needs.dev-deploy.outputs.APP_INGRESS_URL }}
