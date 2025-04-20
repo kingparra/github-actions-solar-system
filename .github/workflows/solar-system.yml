@@ -218,7 +218,7 @@ jobs:
           run: |
             kubectl apply -f kubernetes/development
 
-    integration-testing:
+    integration-test:
       uses: ./.github/workflows/reusable-workflow.yml
       needs: dev-deploy
       with:
