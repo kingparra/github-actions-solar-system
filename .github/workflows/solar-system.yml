@@ -260,3 +260,21 @@ jobs:
       needs: dev-deploy
       with:
         ingress-url: ${{ needs.dev-deploy.outputs.APP_INGRESS_URL }}
+
+    # slack-notification:
+    #   if: always()
+    #   name: Slack Notification
+    #   # needs: [dev-integration-test, prod-integration-test]
+    #   continue-on-error: true
+    #   runs-on: ubuntu-latest
+    #   steps:
+    #     - uses: actions/checkout@v4
+    #     - name: Slack notification
+    #       uses: rtCamp/action-slack-notify@v2
+    #       env:
+    #         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    #         SLACK_CHANNEL: github-actions-channel
+    #         SLACK_COLOR: ${{ job.status }}
+    #         SLACK_USERNAME: ${{ secrets.SLACK_USERNAME }}
+    #         SLACK_MESSAGE: ':hammer_and_wrench Triggered by ${{ github.actor }}'
+    #         SLACK_TITLE: Information
